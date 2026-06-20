@@ -5,6 +5,7 @@ from __future__ import annotations
 import logging
 
 import pandas as pd
+from types import SimpleNamespace
 import torch
 
 from src.models.mlp import MLP
@@ -15,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 _THRESHOLD = 0.5
 _RISK_THRESHOLDS = [(0.3, "low"), (0.6, "medium"), (1.0, "high")]
-_WEIGHTS_PATH = MODELS_DIR / "saved" / "mlp_model.pt"
+_WEIGHTS_PATH = MODELS_DIR / "mlp_model.pt"
 
 
 def _risk_tier(prob: float) -> str:
@@ -35,11 +36,37 @@ class Predictor:
         self._threshold = _THRESHOLD
 
     def load(self) -> None:
-        self._preprocessor = load_preprocessor()
+        pre = load_preprocessor()
 
-        # Infere input_dim diretamente dos pesos salvos (evita dados dummy)
-        state_dict = torch.load(_WEIGHTS_PATH, map_location=self._device, weights_only=True)
-        input_dim: int = state_dict["network.0.weight"].shape[1]
+        # Se o preprocessor salvo for um tuple (columns, scaler), cria um wrapper
+        if isinstance(pre, (list, tuple)) and len(pre) == 2:
+            columns, scaler = pre
+
+            def _transform(df: pd.DataFrame):
+                X = pd.get_dummies(df, drop_first=True)
+                X = X.reindex(columns=columns, fill_value=0)
+                return scaler.transform(X)
+
+            self._preprocessor = SimpleNamespace(transform=_transform)
+        else:
+            self._preprocessor = pre
+
+        # Carrega o modelo salvo (MLflow salva o modelo inteiro, não apenas state_dict)
+        loaded = torch.load(_WEIGHTS_PATH, map_location=self._device, weights_only=False)
+        
+        # Se é um dicionário, é state_dict; senão, é a classe MLP
+        if isinstance(loaded, dict):
+            state_dict = loaded
+        else:
+            # É uma instância de MLP, extrai o state_dict
+            state_dict = loaded.state_dict()
+        
+        # Infere input_dim a partir do primeiro layer da rede
+        first_weight_key = next((k for k in state_dict.keys() if 'weight' in k and '0.' in k), None)
+        if not first_weight_key:
+            raise ValueError("Não foi possível inferir input_dim do modelo salvo")
+        
+        input_dim: int = state_dict[first_weight_key].shape[1]
 
         self._model = MLP(
             input_dim=input_dim,

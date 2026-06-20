@@ -39,10 +39,10 @@ class MLP(nn.Module):
             prev_dim = hidden_dim
 
         layers.append(nn.Linear(prev_dim, output_dim))
-        self.network = nn.Sequential(*layers)
+        self.net = nn.Sequential(*layers)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:  # noqa: D102
-        return self.network(x)
+        return self.net(x)
 
     @property
     def num_parameters(self) -> int:
