@@ -12,7 +12,6 @@ from src.schemas.telco import TELCO_SCHEMA
 from src.utils.config import CATEGORICAL_FEATURES, NUMERICAL_FEATURES
 from tests.conftest import SAMPLE_CUSTOMER
 
-
 # ── Fixtures com escopo de módulo (criadas uma vez por sessão) ────────────────
 
 @pytest.fixture(scope="module")

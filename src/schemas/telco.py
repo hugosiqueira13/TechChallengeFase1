@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import pandera as pa
 from pandera import Check, Column, DataFrameSchema
 
 TELCO_SCHEMA = DataFrameSchema(

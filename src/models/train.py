@@ -5,8 +5,7 @@ from __future__ import annotations
 import argparse
 import logging
 from copy import deepcopy
-from dataclasses import dataclass, field
-from pathlib import Path
+from dataclasses import dataclass
 
 import mlflow
 import mlflow.pytorch
@@ -34,6 +33,7 @@ from torch.utils.data import DataLoader
 
 from src.models.dataset import TabularDataset
 from src.models.mlp import MLP
+from src.preprocessing.pipeline import fit_and_save_preprocessor
 from src.utils.config import (
     CAMPAIGN_COST_RATIO,
     CATEGORICAL_FEATURES,
@@ -45,11 +45,9 @@ from src.utils.config import (
     MODEL_PATH,
     MONTHS_RETAINED,
     NUMERICAL_FEATURES,
-    PREPROCESSOR_PATH,
     RETENTION_RATE,
     TARGET_COLUMN,
 )
-from src.preprocessing.pipeline import fit_and_save_preprocessor
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s | %(levelname)s | %(message)s")
 log = logging.getLogger(__name__)

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Literal, Optional
+from typing import Literal
 
 from pydantic import BaseModel, Field
 
@@ -13,7 +13,7 @@ class CustomerFeatures(BaseModel):
     # Numéricos
     tenure: int = Field(..., ge=0, le=72, description="Meses como cliente")
     MonthlyCharges: float = Field(..., gt=0, description="Cobrança mensal (R$)")
-    TotalCharges: Optional[float] = Field(None, ge=0, description="Total acumulado (R$)")
+    TotalCharges: float | None = Field(None, ge=0, description="Total acumulado (R$)")
 
     # Demográficos
     gender: Literal["Male", "Female"]
