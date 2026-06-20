@@ -365,11 +365,12 @@ def print_comparison_table(results: list[ModelResult]) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Treina MLP + baselines com MLflow tracking")
-    parser.add_argument("--epochs",     type=int,   default=DEFAULT_HPARAMS["epochs"])
-    parser.add_argument("--lr",         type=float, default=DEFAULT_HPARAMS["lr"])
-    parser.add_argument("--batch-size", type=int,   default=DEFAULT_HPARAMS["batch_size"])
-    parser.add_argument("--dropout",    type=float, default=DEFAULT_HPARAMS["dropout"])
-    parser.add_argument("--patience",   type=int,   default=DEFAULT_HPARAMS["patience"])
+    parser.add_argument("--epochs",       type=int,   default=DEFAULT_HPARAMS["epochs"])
+    parser.add_argument("--lr",           type=float, default=DEFAULT_HPARAMS["lr"])
+    parser.add_argument("--batch-size",   type=int,   default=DEFAULT_HPARAMS["batch_size"])
+    parser.add_argument("--dropout",      type=float, default=DEFAULT_HPARAMS["dropout"])
+    parser.add_argument("--patience",     type=int,   default=DEFAULT_HPARAMS["patience"])
+    parser.add_argument("--random-state", type=int,   default=DEFAULT_HPARAMS["random_state"])
     args = parser.parse_args()
 
     hparams = {
@@ -379,6 +380,7 @@ def main() -> None:
         "batch_size": args.batch_size,
         "dropout": args.dropout,
         "patience": args.patience,
+        "random_state": args.random_state,
     }
 
     # 1. Dados

@@ -148,6 +148,22 @@ Após o treinamento:
 - `models/saved/mlp_model.pt` — Pesos do modelo PyTorch
 - `mlruns/` — Experimentos MLflow (todos os baselines + MLP)
 
+### Treinamento em tempo de deploy
+
+Para gerar os artefatos durante o build/deploy (Render, Vercel ou CI), use:
+
+```bash
+python scripts/train_for_deploy.py --no-cache
+```
+
+Se estiver usando Render, configure o Build Command direto no builder para:
+
+```bash
+python -m pip install -e . && python scripts/train_for_deploy.py --no-cache
+```
+
+Isso garante que o dataset local `dataset/Dataset Telco-Customer-Churn.csv` seja usado para treinar e salvar os artefatos em `models/saved/` antes do start da aplicação.
+
 ### Visualizar experimentos no MLflow
 
 ```bash
