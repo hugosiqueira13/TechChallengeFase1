@@ -397,3 +397,96 @@ Documentação detalhada em:
 ## Licença
 
 MIT
+
+---
+
+**Notas importantes**
+
+- Os artefatos esperados pela API ficam em `models/saved/`.
+- O servidor carrega automaticamente o pré-processador salvo e espera que a transformação produza o mesmo número e ordem de colunas usados no treinamento.
+- Os testes unitários e de integração passaram localmente após as correções.
+
+---
+
+**Como executar `/predict` localmente (passo a passo)**
+
+1. Ative seu ambiente virtual e instale dependências (veja seção Setup acima).
+
+2. Verifique a presença dos artefatos em `models/saved/`:
+
+   - `models/saved/mlp_model.pt` (pesos do modelo)
+   - `models/saved/preprocessor.pkl` (pré-processador)
+
+   Se `preprocessor.pkl` não existir ou você quiser reconstruí-lo, rode um dos scripts:
+
+```bash
+python save_safe_preprocessor.py
+# ou, para o preprocessor legado compatível com get_dummies
+python build_legacy_preprocessor.py
+```
+
+3. Inicie a API (qualquer uma das opções):
+
+```bash
+# Unix
+uvicorn src.api.main:app --reload --host 0.0.0.0 --port 8000
+
+# Windows (PowerShell)
+python -m uvicorn src.api.main:app --host 0.0.0.0 --port 8000
+```
+
+4. Verifique o endpoint de saúde:
+
+```bash
+curl http://127.0.0.1:8000/health
+```
+
+5. Faça uma chamada de predição com `curl` (bash):
+
+```bash
+curl -s -X POST http://127.0.0.1:8000/predict \
+  -H "Content-Type: application/json" \
+  -d '{
+    "tenure": 12,
+    "MonthlyCharges": 65.5,
+    "TotalCharges": 786.0,
+    "gender": "Female",
+    "SeniorCitizen": 0,
+    "Partner": "Yes",
+    "Dependents": "No",
+    "PhoneService": "Yes",
+    "MultipleLines": "No",
+    "InternetService": "Fiber optic",
+    "OnlineSecurity": "No",
+    "OnlineBackup": "No",
+    "DeviceProtection": "No",
+    "TechSupport": "No",
+    "StreamingTV": "Yes",
+    "StreamingMovies": "Yes",
+    "Contract": "Month-to-month",
+    "PaperlessBilling": "Yes",
+    "PaymentMethod": "Electronic check"
+  }' | jq
+```
+
+6. Chamada equivalente no PowerShell (evita prompt de parsing):
+
+```powershell
+$body = '{"tenure":12,"MonthlyCharges":65.5,"TotalCharges":786.0,"gender":"Female","SeniorCitizen":0,"Partner":"Yes","Dependents":"No","PhoneService":"Yes","MultipleLines":"No","InternetService":"Fiber optic","OnlineSecurity":"No","OnlineBackup":"No","DeviceProtection":"No","TechSupport":"No","StreamingTV":"Yes","StreamingMovies":"Yes","Contract":"Month-to-month","PaperlessBilling":"Yes","PaymentMethod":"Electronic check" }'
+Invoke-WebRequest -UseBasicParsing -Uri http://127.0.0.1:8000/predict -Method POST -Headers @{'Content-Type'='application/json'} -Body $body | Select-Object -ExpandProperty Content
+```
+
+7. Resposta esperada (exemplo):
+
+```json
+{"churn_probability":0.4976,"churn_predicted":false,"threshold_used":0.5,"risk_tier":"medium"}
+```
+
+8. Problemas comuns e soluções rápidas:
+
+- Erro `Modelo não disponível` ou 503: verifique `models/saved/preprocessor.pkl` e `models/saved/mlp_model.pt` e reinicie o servidor.
+- Erro de shapes em multiplicação matricial: indica que as colunas produzidas pelo pré-processador não batem com o `input_dim` do modelo; reconstrua o pré-processador com `save_safe_preprocessor.py` ou use `build_legacy_preprocessor.py` para reproduzir o pipeline usado em treino.
+
+---
+
+Se quiser, eu posso também commitar e abrir um PR com essa versão do `README.md`, ou adaptar o texto em inglês. Deseja que eu faça o commit e crie o PR agora?
