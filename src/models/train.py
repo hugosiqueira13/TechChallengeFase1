@@ -320,7 +320,8 @@ def train_mlp(
         MODEL_PATH.parent.mkdir(parents=True, exist_ok=True)
         torch.save(model.state_dict(), MODEL_PATH)
         mlflow.log_artifact(str(MODEL_PATH), artifact_path="mlp_weights")
-        mlflow.pytorch.log_model(model, artifact_path="mlp_model")
+        mlflow.pytorch.log_model(model, artifact_path="mlp_model", serialization_format="pickle")
+
 
     log.info("MLP_PyTorch        | AUC: %.4f | F1: %.4f | Recall: %.4f | Net: R$%.0f",
              metrics["roc_auc"], metrics["f1"], metrics["recall"], opt_val)
