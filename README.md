@@ -197,6 +197,20 @@ uvicorn src.api.main:app --reload --host 0.0.0.0 --port 8000
 | `GET` | `/docs` | Swagger UI (documentação interativa) |
 | `GET` | `/redoc` | ReDoc |
 
+### Deploy público no Render
+
+A API está publicada em:
+
+- Base URL: https://techchallengefase1-qmaw.onrender.com
+- Healthcheck: https://techchallengefase1-qmaw.onrender.com/health
+- Endpoint de predição: https://techchallengefase1-qmaw.onrender.com/predict
+
+O deploy foi configurado para gerar os artefatos do modelo no próprio build, com o comando:
+
+```bash
+python -m pip install -e . && python scripts/train_for_deploy.py --no-cache
+```
+
 ### Verificar saúde da API
 
 ```bash
@@ -211,7 +225,7 @@ curl http://localhost:8000/health
 }
 ```
 
-### Exemplo de predição
+### Exemplo de predição local
 
 ```bash
 curl -X POST http://localhost:8000/predict \
@@ -237,6 +251,69 @@ curl -X POST http://localhost:8000/predict \
     "PaperlessBilling": "Yes",
     "PaymentMethod": "Electronic check"
   }'
+```
+
+### Exemplo de consumo da API pública no Render
+
+```bash
+curl -X POST https://techchallengefase1-qmaw.onrender.com/predict \
+  -H "Content-Type: application/json" \
+  -d '{
+    "tenure": 12,
+    "MonthlyCharges": 65.5,
+    "TotalCharges": 786.0,
+    "gender": "Female",
+    "SeniorCitizen": 0,
+    "Partner": "Yes",
+    "Dependents": "No",
+    "PhoneService": "Yes",
+    "MultipleLines": "No",
+    "InternetService": "Fiber optic",
+    "OnlineSecurity": "No",
+    "OnlineBackup": "No",
+    "DeviceProtection": "No",
+    "TechSupport": "No",
+    "StreamingTV": "Yes",
+    "StreamingMovies": "Yes",
+    "Contract": "Month-to-month",
+    "PaperlessBilling": "Yes",
+    "PaymentMethod": "Electronic check"
+  }'
+```
+
+Exemplo em Python:
+
+```python
+import requests
+
+payload = {
+    "tenure": 12,
+    "MonthlyCharges": 65.5,
+    "TotalCharges": 786.0,
+    "gender": "Female",
+    "SeniorCitizen": 0,
+    "Partner": "Yes",
+    "Dependents": "No",
+    "PhoneService": "Yes",
+    "MultipleLines": "No",
+    "InternetService": "Fiber optic",
+    "OnlineSecurity": "No",
+    "OnlineBackup": "No",
+    "DeviceProtection": "No",
+    "TechSupport": "No",
+    "StreamingTV": "Yes",
+    "StreamingMovies": "Yes",
+    "Contract": "Month-to-month",
+    "PaperlessBilling": "Yes",
+    "PaymentMethod": "Electronic check",
+}
+
+response = requests.post(
+    "https://techchallengefase1-qmaw.onrender.com/predict",
+    json=payload,
+    timeout=30,
+)
+print(response.json())
 ```
 
 **Resposta esperada:**
